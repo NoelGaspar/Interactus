@@ -70,6 +70,7 @@ int r = 0;
 int g = 0;
 int b = 0;
 int tipo  = 0;
+int zona = 0;
 void cuadricula(float _temp, float _bpm);
 
 void setup()
@@ -477,9 +478,9 @@ tipo = 1;
 	{
     	if (_temp < 25) {
       	Serial.println("cuadrante 34");
-      	r = 255//255;
-      	g = 80//253;
-      	b = 0//56;
+      	r = 255;//255;
+      	g = 80;//253;
+      	b = 0;//56;
 		tipo = 5;
     }
 	else if ((_temp > 25) and (_temp <= 28)) {

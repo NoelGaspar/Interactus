@@ -37,6 +37,7 @@ float accActual = 0.0;
 int cuadrante = 0;
 int intensidad = 0;
 int tipo = 0;
+int zona = 0;
 
 // PRINT
 unsigned long timer = millis();
@@ -640,9 +641,9 @@ tipo = 1;
 	{
     	if (_temp < 25) {
       	Serial.println("cuadrante 34");
-      	r = 255//255;
-      	g = 80//253;
-      	b = 0//56;
+      	r = 255;//255;
+      	g = 80;//253;
+      	b = 0;//56;
 		tipo = 5;
     }
 	else if ((_temp > 25) and (_temp <= 28)) {

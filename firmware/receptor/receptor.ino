@@ -121,7 +121,7 @@ void loop() {
             delay(600);
             setAll(1, 0,0,0);
             setAll(2, 0,0,0);
-            delay(600);
+            delay(200);
              
         }
         if(myData.tipo == 4)
@@ -138,7 +138,7 @@ void loop() {
             delay(600);
             setAll(1, 0,0,0);
             setAll(2, 0,0,0);
-            delay(600);
+            delay(200);
              
         }
         if(myData.tipo == 6)
