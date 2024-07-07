@@ -154,6 +154,14 @@ void loop()
 			myData.a = accActual;
 			//sendESPNow();
 		}
+		else if(tipo == 'i')
+		{
+			zona = Serial.parseInt();
+			Serial.print("configurando zona. Nueva zona: ");
+			Serial.println(zona);
+			myData.tipo = zona;
+			//sendESPNow();
+		}
     	else if(tipo == '\n')
     	{
 			sendESPNow();
@@ -503,21 +511,21 @@ tipo = 1;
 		tipo = 2;
     } else if ((_temp > 31) and (_temp <= 34)) {
       Serial.println("cuadrante 17");
-      r = 166;
-      g = 38;
-      b = 250;
+      r = 255;//166;
+      g = 20;//38;
+      b = 170;//250;
 		tipo = 3;
     } else if ((_temp > 34) and (_temp <= 37)) {
       Serial.println("cuadrante 18");
-      r = 211;
-      g = 38;
-      b = 247;
+      r = 211;//211;
+      g = 10;//38;
+      b = 150;//247;
 		tipo = 3;
     } else if ((_temp > 37)) {
       Serial.println("cuadrante 19");
-      r = 253;
-      g = 40;
-      b = 248;
+      r = 255;//253;
+      g = 0;//40;
+      b = 130;//248;
 		tipo = 3;
     }
   } else if ((_bpm > 100) and (_bpm <= 110)) {
@@ -529,115 +537,137 @@ tipo = 1;
 		tipo = 4;
     } else if ((_temp > 22) and (_temp <= 25)) {
       Serial.println("cuadrante 21");
-      r = 88;
-      g = 184;
-      b = 52;
+      r = 120;//88;
+      g = 255;//184;
+      b = 25;//52;
 		tipo = 4;
     } else if ((_temp > 25) and (_temp <= 28)) {
       Serial.println("cuadrante 22");
-      r = 171;
-      g = 214;
-      b = 48;
+      r = 230;//171;
+      g = 100;//214;
+      b = 5;//48;
 		tipo = 4;
-    } else if ((_temp > 28) and (_temp <= 31)) {
+    }
+	else if ((_temp > 28) and (_temp <= 31)) {
       Serial.println("cuadrante 23");
-      r = 246;
-      g = 15;
-      b = 52;
+      r = 255;//246;
+      g = 0;//15;
+      b = 0;//52;
 		tipo = 6;
     } else if ((_temp > 31) and (_temp <= 34)) {
       Serial.println("cuadrante 24");
+      r = 255;//251;
+      g = 0;//23;
+      b = 30;//131;
+		tipo = 6;
+    }
+	else if ((_temp > 34) and (_temp <= 37))
+	{
+    	Serial.println("cuadrante 25");
+      	r = 255;//253;
+      	g = 0;//28;
+      	b = 50;//170;
+		tipo = 6;
+    }
+		else if ((_temp > 37))
+		{
+			Serial.println("cuadrante 26");
+			r = 255;//253;
+			g = 0;//34;
+			b = 86;//212;
+			tipo = 6;
+    	}
+  	}
+	else if ((_bpm > 80) and (_bpm <= 110))
+	{
+    	if (_temp < 22)
+		{
+      		Serial.println("cuadrante 27");
+      		r = 170;//132;
+      		g = 170;//202;
+      		b = 20;//49;
+			tipo = 4;
+    	}
+		else if ((_temp > 22) and (_temp <= 25))
+		{
+      		Serial.println("cuadrante 28");
+      		r = 230;//213;
+      		g = 100;//236;
+      		b = 5;//51;
+			tipo = 4;
+    	}
+		else if ((_temp > 25) and (_temp <= 28))
+		{
+      		Serial.println("cuadrante 29");
+      		r = 255;
+      		g = 80;
+      		b = 0;
+			tipo = 5;
+    	}
+		else if ((_temp > 28) and (_temp <= 31))
+		{
+      		Serial.println("cuadrante 30");
+      		r = 255;//253;
+      		g = 10;//87;
+      		b = 10;//32;
+			tipo = 6;
+    	}
+		else if ((_temp > 31) and (_temp <= 34))
+		{
+      		Serial.println("cuadrante 31");
+      		r = 255;//246;
+      		g = 0;//15;
+      		b = 0;//52;
+			tipo = 6;
+    	}
+		else if ((_temp > 34) and (_temp <= 37))
+		{
+      		Serial.println("cuadrante 32");
+      		r = 255;//248;
+      		g = 0;//29;
+      		b = 10;//88;
+			tipo = 6;
+    	}
+ 		else if ((_temp > 37)) {
+      		Serial.println("cuadrante 33");
       r = 251;
       g = 23;
       b = 131;
 		tipo = 6;
-    } else if ((_temp > 34) and (_temp <= 37)) {
-      Serial.println("cuadrante 25");
-      r = 253;
-      g = 28;
-      b = 170;
-		tipo = 6;
-    } else if ((_temp > 37)) {
-      Serial.println("cuadrante 26");
-      r = 253;
-      g = 34;
-      b = 212;
-		tipo = 6;
+    	}
+  	}
+	else if ((_bpm < 80))
+	{
+    	if (_temp < 25) {
+      	Serial.println("cuadrante 34");
+      	r = 255//255;
+      	g = 80//253;
+      	b = 0//56;
+		tipo = 5;
     }
-  } else if ((_bpm > 80) and (_bpm <= 110)) {
-    if (_temp < 22) {
-      Serial.println("cuadrante 27");
-      r = 132;
-      g = 202;
-      b = 49;
-		tipo = 4;
-    } else if ((_temp > 22) and (_temp <= 25)) {
-      Serial.println("cuadrante 28");
-      r = 213;
-      g = 236;
-      b = 51;
-		tipo = 4;
-    } else if ((_temp > 25) and (_temp <= 28)) {
-      Serial.println("cuadrante 29");
-      r = 252;
-      g = 214;
-      b = 48;
+	else if ((_temp > 25) and (_temp <= 28)) {
+      	Serial.println("cuadrante 35");
+      	r = 255;//253;
+      	g = 50;//170;
+      	b = 0;//43;
 		tipo = 5;
     } else if ((_temp > 28) and (_temp <= 31)) {
-      Serial.println("cuadrante 30");
-      r = 253;
-      g = 87;
-      b = 32;
-		tipo = 6;
-    } else if ((_temp > 31) and (_temp <= 34)) {
-      Serial.println("cuadrante 31");
-      r = 246;
-      g = 15;
-      b = 52;
-		tipo = 6;
-    } else if ((_temp > 34) and (_temp <= 37)) {
-      Serial.println("cuadrante 32");
-      r = 248;
-      g = 29;
-      b = 88;
-		tipo = 6;
-    } else if ((_temp > 37)) {
-      Serial.println("cuadrante 33");
-      r = 251;
-      g = 23;
-      b = 131;
-		tipo = 6;
-    }
-  } else if ((_bpm < 80)) {
-    if (_temp < 25) {
-      Serial.println("cuadrante 34");
-      r = 255;
-      g = 253;
-      b = 56;
-		tipo = 5;
-    } else if ((_temp > 25) and (_temp <= 28)) {
-      Serial.println("cuadrante 35");
-      r = 253;
-      g = 170;
-      b = 43;
-		tipo = 5;
-    } else if ((_temp > 28) and (_temp <= 31)) {
-      Serial.println("cuadrante 36");
-      r = 253;
-      g = 87;
-      b = 32;
+      	Serial.println("cuadrante 36");
+      	r = 255;//253;
+      	g = 5;//87;
+      	b = 5;//32;
 		tipo = 6;
     } else if ((_temp > 31) and (_temp <= 34)) {
       Serial.println("cuadrante 37");
-      r = 250;
-      g = 45;
-      b = 27;
+      r = 255;//250;
+      g = 10;//45;
+      b = 10;//27;
 		tipo = 6;
     } else if ((_temp > 34)) {
       Serial.println("cuadrante 38");
-      r = 246;
-      g = 25;
-      b = 52;
+      r = 255;//246;
+      g = 0;//25;
+      b = 0;//52;
 		tipo = 6;
     }
   }

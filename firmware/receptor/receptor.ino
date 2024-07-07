@@ -48,6 +48,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   	Serial.println(myData.conectado);
   	Serial.println();
 
+    Serial.print("zona:");
+    Serial.println(myData.tipo);
+    Serial.println();
   	intensidad = map(int(myData.a), 3, 100, 0, 255);
   	if (intensidad > 255) intensidad = 255;
   	if (intensidad < 0) intensidad = 0;
@@ -92,25 +95,56 @@ void loop() {
 
 	if (myData.conectado == false)
 	{
-    	// blanco
-    	fullColor(1, strip_BI.Color(0, 0, 0, 100));  // True white (not RGB white)
-    	fullColor(2, strip_BD.Color(0, 0, 0, 100));  // True white (not RGB white)
-    	strip_BI.setBrightness(intensidad);
-    	strip_BD.setBrightness(intensidad);
+    	// blanco 	
+      RunningLights(0xff,0xff,0xff, 100);  // white
  	}
   else
 	{
       	if(myData.tipo == 1)
       	{ 
-      	    colorWipe((myData.g * intensidad/255),(myData.r * intensidad/255), (myData.b * intensidad/255), 50);
-            fullColor(1, strip_BI.Color(0,0,0,0);  // True white (not RGB white)
-            fullColor(2, strip_BD.Color(0,0,0,0);  // True white (not RGB white)
+      	    colorWipe((myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255), 200);
+            fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
+            fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
              
       	}
-        if(myData.tipo == 6)
+        if(myData.tipo == 2)
+        { 
+            colorWipe((myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255), 100);
+            fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
+            fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
+             
+        }
+        if(myData.tipo == 3)
         { 
             setAll(1, (myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255));
-            setAll(2, (myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255)) ;      
+            setAll(2, (myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255));
+            delay(600);
+            setAll(1, 0,0,0);
+            setAll(2, 0,0,0);
+            delay(600);
+             
+        }
+        if(myData.tipo == 4)
+        { 
+            colorWipe((myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255), 100);
+            fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
+            fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
+             
+        }
+        if(myData.tipo == 5)
+        { 
+            setAll(1, (myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255));
+            setAll(2, (myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255));
+            delay(600);
+            setAll(1, 0,0,0);
+            setAll(2, 0,0,0);
+            delay(600);
+             
+        }
+        if(myData.tipo == 6)
+        { 
+            Strobe((myData.r * intensidad/255),(myData.g * intensidad/255), (myData.b * intensidad/255), 10, 50, 100);
+              
         }
         
   }
@@ -128,6 +162,51 @@ void colorWipe(byte red, byte green, byte blue, int SpeedDelay)
       delay(SpeedDelay);
   }
 }
+
+void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause)
+{
+    for(int j = 0; j < StrobeCount; j++) 
+    {
+      setAll(1,red,green,blue);
+      setAll(2,red,green,blue);
+      showStrip(1);
+      showStrip(2);
+      delay(FlashDelay);
+      setAll(1,0,0,0);
+      setAll(2,0,0,0);
+      showStrip(1);
+      showStrip(2);
+      delay(FlashDelay);
+    }
+ 
+    delay(EndPause);
+}
+
+void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
+  int Position=0;
+ 
+  for(int j=0; j<NUM_LEDS*2; j++)
+  {
+      Position++; // = 0; //Position + Rate;
+      for(int i=0; i<NUM_LEDS; i++) {
+        // sine wave, 3 offset waves make a rainbow!
+        //float level = sin(i+Position) * 127 + 128;
+        //setPixel(i,level,0,0);
+        //float level = sin(i+Position) * 127 + 128;
+        setPixel(1,i,((sin(i+Position) * 127 + 128)/255)*red,
+                   ((sin(i+Position) * 127 + 128)/255)*green,
+                   ((sin(i+Position) * 127 + 128)/255)*blue);
+        setPixel(2,i,((sin(i+Position) * 127 + 128)/255)*red,
+                   ((sin(i+Position) * 127 + 128)/255)*green,
+                   ((sin(i+Position) * 127 + 128)/255)*blue);
+      }
+     
+      showStrip(1);
+      showStrip(2);
+      delay(WaveDelay);
+  }
+}
+
 
 void showStrip(int ch)
 {
