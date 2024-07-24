@@ -4,9 +4,9 @@
 //#include <ESP8266WiFi.h>
 
 typedef struct struct_message {  	
-    int r;
-    int g;
-  	int b;
+    long h;
+    int s;
+  	int v;
   	float a;
   	bool conectado;
 	  int tipo;
@@ -27,6 +27,12 @@ int color_r = 0;
 int color_b = 0;
 int color_g = 0;
 
+long color_h = 0;
+int color_s = 0;
+int color_v = 0;
+
+long diff = 0;
+
 Adafruit_NeoPixel strip_BI = Adafruit_NeoPixel(NUM_LEDS_BI, LED_PIN_BI, NEO_RGBW + NEO_KHZ800);
 Adafruit_NeoPixel strip_BD = Adafruit_NeoPixel(NUM_LEDS_BD, LED_PIN_BD, NEO_RGBW + NEO_KHZ800);
 
@@ -36,14 +42,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   	Serial.print("Bytes received: ");
   	Serial.println(len);
   	
-  	Serial.print(" Red: ");
-  	Serial.println(myData.r);
+  	Serial.print(" Hue: ");
+  	Serial.println(myData.h);
   	
-  	Serial.print("Green: ");
-  	Serial.println(myData.g);
+  	Serial.print(" Saturation: ");
+  	Serial.println(myData.s);
 
-    Serial.print(" Blue: ");
-    Serial.println(myData.b);
+    Serial.print(" Value: ");
+    Serial.println(myData.v);
     
   	Serial.print("conectado: ");
   	Serial.println(myData.conectado);
@@ -52,7 +58,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     Serial.println(myData.tipo);
     
 
-  	intensidad = map(int(myData.a)*10, 0, 80, 10, 255);
+  	intensidad = map(int(myData.a)*10, 0, 30, 60, 255);
   	if (intensidad > 255) intensidad = 255;
   	if (intensidad < 0) intensidad = 0;
     
@@ -60,9 +66,12 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     Serial.println(intensidad);    
     Serial.println();
 
-    color_r = myData.r * intensidad/255;
-    color_g = myData.g * intensidad/255;
-    color_b = myData.b * intensidad/255;
+    //color_r = myData.r * intensidad/255;
+    //color_g = myData.g * intensidad/255;
+    //color_b = myData.b * intensidad/255;
+    color_h = myData.h;
+    color_s = myData.s;
+    color_v = intensidad;
 }
 
 void setup()
@@ -105,97 +114,40 @@ void loop() {
 	if (myData.conectado == false)
 	{
     	// blanco 	
-      RunningLights(0xff,0xff,0xff, 100);  // white
+      RunningLights(0xff,0xff,0xff, 60);  // white
  	}
   else
 	{
-      	if(myData.tipo == 1)
-      	{ 
-      	    //colorWipe(color_r,color_g, color_b, 200);
-            //fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
-            //fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
-            setAll(1, color_r,color_g, color_b);
-      	}
-        if(myData.tipo == 2)
-        { 
-            //colorWipe(color_r,color_g, color_b, 100);
-            //fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
-            //fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
-            setAll(1, color_r,color_g, color_b);
+      	
+      	    if(myData.tipo >90)
+            {
+              setAllHSV(1, color_h,color_s, color_v);
+              setAllHSV(2, color_h,color_s, color_v);
+      	      delay((180-myData.tipo)*3);
+              setAll(1, 0,0,0);
+              setAll(2, 0,0,0);
+              delay((180-myData.tipo));
+            }
+            else
+            {
+              setAllHSV(1, color_h,color_s, color_v);
+              setAllHSV(2, color_h,color_s, color_v);
              
-        }
-        if(myData.tipo == 3)
-        { 
-            setAll(1, color_r,color_g, color_b);
-            setAll(2, color_r,color_g, color_b);
-            delay(600);
-            setAll(1, 0,0,0);
-            setAll(2, 0,0,0);
-            delay(200);
-             
-        }
-        if(myData.tipo == 4)
-        { 
-            //colorWipe(color_r,color_g, color_b, 100); 
-            //fullColor(1, strip_BI.Color(0,0,0,0));  // True white (not RGB white)
-            //fullColor(2, strip_BD.Color(0,0,0,0));  // True white (not RGB white)
-              setAll(1, color_r,color_g, color_b);
-        }
-        if(myData.tipo == 5)
-        { 
-            setAll(1, color_r,color_g, color_b);
-            setAll(2, color_r,color_g, color_b);
-            delay(600);
-            setAll(1, 0,0,0);
-            setAll(2, 0,0,0);
-            delay(200);
-             
-        }
-        if(myData.tipo == 6)
-        { 
-            Strobe(color_r,color_g, color_b, 10, 50, 100);
-              
-        }
+            }
+        
         
   }
   delay(100);
 }
 
-void colorWipe(byte red, byte green, byte blue, int SpeedDelay)
-{
-  for(uint16_t i=0; i<NUM_LEDS; i++) 
-  {
-      setPixel(1,i, red, green, blue);
-      setPixel(2,i, red, green, blue);
-      showStrip(1);
-      showStrip(2);
-      delay(SpeedDelay);
-  }
-}
 
-void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause)
-{
-    for(int j = 0; j < StrobeCount; j++) 
-    {
-      setAll(1,red,green,blue);
-      setAll(2,red,green,blue);
-      showStrip(1);
-      showStrip(2);
-      delay(FlashDelay);
-      setAll(1,0,0,0);
-      setAll(2,0,0,0);
-      showStrip(1);
-      showStrip(2);
-      delay(FlashDelay);
-    }
- 
-    delay(EndPause);
-}
+
+
 
 void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
   int Position=0;
  
-  for(int j=0; j<NUM_LEDS*2; j++)
+  for(int j=0; j<NUM_LEDS/2; j++)
   {
       Position++; // = 0; //Position + Rate;
       for(int i=0; i<NUM_LEDS; i++) {
@@ -204,11 +156,12 @@ void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
         //setPixel(i,level,0,0);
         //float level = sin(i+Position) * 127 + 128;
         setPixel(1,i,((sin(i+Position) * 127 + 128)/255)*red,
-                   ((sin(i+Position) * 127 + 128)/255)*green,
-                   ((sin(i+Position) * 127 + 128)/255)*blue);
+                     ((sin(i+Position) * 127 + 128)/255)*green,
+                     ((sin(i+Position) * 127 + 128)/255)*blue);
+        
         setPixel(2,i,((sin(i+Position) * 127 + 128)/255)*red,
-                   ((sin(i+Position) * 127 + 128)/255)*green,
-                   ((sin(i+Position) * 127 + 128)/255)*blue);
+                     ((sin(i+Position) * 127 + 128)/255)*green,
+                     ((sin(i+Position) * 127 + 128)/255)*blue);
       }
      
       showStrip(1);
@@ -228,7 +181,13 @@ void setPixel(int ch, int Pixel, byte red, byte green, byte blue)
 {
 	if(ch == 1) strip_BI.setPixelColor(Pixel, strip_BI.Color( green,red, blue));
 	if(ch == 2) strip_BD.setPixelColor(Pixel, strip_BD.Color( green,red, blue));
-	}
+}
+
+void setPixelHSV(int ch, int Pixel, long h, int s, int v)
+{
+  if(ch == 1) strip_BI.setPixelColor(Pixel, strip_BI.gamma32(strip_BI.ColorHSV( h, s, v)));
+  if(ch == 2) strip_BD.setPixelColor(Pixel, strip_BD.gamma32(strip_BD.ColorHSV( h, s, v)));
+}
 
 void setAll(int ch, byte red, byte green, byte blue)
 {
@@ -237,6 +196,15 @@ void setAll(int ch, byte red, byte green, byte blue)
     	setPixel(ch,i, red, green, blue);
   	}
   	showStrip(ch);
+}
+
+void setAllHSV(int ch, long h ,int s, int v)
+{
+  for(int i = 0; i < NUM_LEDS; i++ )
+  {
+      setPixelHSV(ch,i, h, s, v);
+    }
+    showStrip(ch);
 }
 
 void colorWipe(uint32_t color, int wait)
