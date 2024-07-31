@@ -186,8 +186,8 @@ void updateMsg()
   	myData.s = s;
   	myData.v = v;
   	myData.a = accActual;
-	  myData.tipo = z;
-	  myData.conectado = pulseConnected;
+	myData.tipo = z;
+	myData.conectado = pulseConnected;
 }
 
 void sendESPNow()
@@ -253,48 +253,45 @@ void readPulse()
 
 void conversor(float _temp, float _bpm)
 {
-  float t_aux = _temp;
-  float b_aux = _bpm;
-  if(t_aux < TEMP_MIN){t_aux = TEMP_MIN;}
-  if(t_aux > TEMP_MAX){t_aux = TEMP_MAX;}
-  if(b_aux < BPM_MIN ){b_aux = BPM_MIN;}  
-  if(b_aux > BPM_MAX ){b_aux = BPM_MAX;}
-  
-  x = (t_aux / 5.0) - (31/5.0);
-  y = (b_aux/20.0)-4;
-  x= -1*x;
-  y = -1*y;
-  
- // r = pow( (pow(x,2)+pow(y,2)),0.5);
- // theta = atan(y/x);
-  point.fromCartesian(x,y);
-  r = point.getR();
-  r = r/sqrt(2);
-  theta = point.getAngle();
-  theta = theta *180.0/PI;
+ 	float t_aux = _temp;
+ 	float b_aux = _bpm;
+ 	if(t_aux < TEMP_MIN){t_aux = TEMP_MIN;}
+ 	if(t_aux > TEMP_MAX){t_aux = TEMP_MAX;}
+ 	if(b_aux < BPM_MIN ){b_aux = BPM_MIN;}
+ 	if(b_aux > BPM_MAX ){b_aux = BPM_MAX;}
 
-  theta_aux = theta + 45;
-  if(theta_aux < 180){z = theta_aux;}
-  else{ z = abs(360 - theta_aux); }
-  
-  s = int(r*255);
-  h = long( (65535/360.0)*theta );
-   
-  Serial.print(" x: ");
-  Serial.print(x);
-  Serial.print(" y: ");
-  Serial.print(y);
-  Serial.print(" r: ");
-  Serial.print(r);
-  Serial.print(" th: ");
-  Serial.print(theta);
-  Serial.print(" s: ");
-  Serial.print(s);
-  Serial.print(" h: ");  
-  Serial.print(h);
-  Serial.print(" z: ");  
-  Serial.println(z);
-  
-    
+  	x = (t_aux / 5.0) - (31/5.0);
+  	y = (b_aux/20.0)-4;
+  	x = -1*x;
+  	y = -1*y;
 
+ 	// r = pow( (pow(x,2)+pow(y,2)),0.5);
+ 	// theta = atan(y/x);
+  	point.fromCartesian(x,y);
+  	r = point.getR();
+  	r = r/sqrt(2);
+  	theta = point.getAngle();
+  	theta = theta *180.0/PI;
+
+  	theta_aux = theta + 45;
+  	if(theta_aux < 180){z = theta_aux;}
+  	else{ z = abs(360 - theta_aux); }
+
+  	s = int(r*255);
+  	h = long( (65535/360.0)*theta );
+
+  	Serial.print(" x: ");
+  	Serial.print(x);
+  	Serial.print(" y: ");
+  	Serial.print(y);
+  	Serial.print(" r: ");
+  	Serial.print(r);
+  	Serial.print(" th: ");
+  	Serial.print(theta);
+  	Serial.print(" s: ");
+  	Serial.print(s);
+  	Serial.print(" h: ");
+  	Serial.print(h);
+  	Serial.print(" z: ");
+  	Serial.println(z);
 }

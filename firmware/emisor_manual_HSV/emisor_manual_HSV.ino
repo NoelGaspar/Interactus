@@ -68,7 +68,7 @@ typedef struct struct_message {
   	int v;
   	float a;
   	bool conectado;
-	  int tipo;
+	int tipo;
 } struct_message;
 
 struct_message myData;
@@ -90,21 +90,20 @@ int v = 0;
 int b = 0;
 int t = 0;
 void cuadricula(float _temp, float _bpm);
+void printMenu();
 
 void setup()
 {
 	Serial.begin(115200);
   	Wire.begin();
 
-	// ACELEROMETRO
-  	//accStatus = acelSensor.begin();
-
-	//Serial.print(F("MPU6050 status: "));
-	//Serial.println(accStatus);
-
 	while (!Serial) delay(100);
-	// TEMPERATURA
-  myData.conectado = true;
+
+	// Condiciones iniciales
+	myData.conectado = true;
+	myData.tipo = 1;
+	myData.a = 100;;
+
 	//WiFi
 	WiFi.mode(WIFI_STA);
 	// Init ESP-NOW
@@ -118,6 +117,8 @@ void setup()
 
   	// Register peer
   	esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
+
+	printMenu();
 }
 
 void loop()
@@ -125,7 +126,8 @@ void loop()
 	while(Serial.available()>0)
 	{
 		char tipo = Serial.read();
-	  /*	if( tipo == 'c')
+	  	/*
+		if( tipo == 'c')
 		{
 			cuadrante = Serial.parseInt();
 			Serial.print("configurando cuadrante. Nuevo cuadrante: ");
@@ -137,7 +139,7 @@ void loop()
       		//sendESPNow();
 		}*/
 		// else
-     
+
 		if(tipo == 'h')
 		{
 			h = Serial.parseInt();
@@ -182,29 +184,30 @@ void loop()
 			myData.tipo = zona;
 			//sendESPNow();
 		}
-    else if(tipo == 't')
-    {
-      t = Serial.parseInt();
-      Serial.print("configurando temperatura : ");
-      Serial.println(t);
-     
-      //sendESPNow();
-    }
-    else if(tipo == 'b')
-    {
-      b = Serial.parseInt();
-      Serial.print("configurando bpm: ");
-      Serial.println(b);
-      conversor(t,b);
-      myData.h = h;
-      myData.s = s;
-      myData.v = v;    
-      //sendESPNow();
-    }
-    else if(tipo == '\n')
-    {
-		  sendESPNow();
-    }
+    	else if(tipo == 't')
+    	{
+      		t = Serial.parseInt();
+      		Serial.print("configurando temperatura : ");
+      		Serial.println(t);
+      	//sendESPNow();
+    	}
+    	else if(tipo == 'b')
+    	{
+      		b = Serial.parseInt();
+      		Serial.print("configurando bpm: ");
+      		Serial.println(b);
+      		conversor(t,b);
+			myData.tipo = 1;
+      		myData.h = h;
+      		myData.s = s;
+      		myData.v = v;
+      		//sendESPNow();
+    	}
+    	else if(tipo == '\n')
+    	{
+			sendESPNow();
+			printMenu();
+    	}
 	}
 
 
@@ -216,42 +219,47 @@ void loop()
 
 void conversor(float _temp, float _bpm)
 {
-  float t_aux = _temp;
-  float b_aux = _bpm;
-  if(t_aux < TEMP_MIN){t_aux = TEMP_MIN;}
-  if(t_aux > TEMP_MAX){t_aux = TEMP_MAX;}
-  if(b_aux < BPM_MIN ){b_aux = BPM_MIN;}  
-  if(b_aux > BPM_MAX ){b_aux = BPM_MAX;}
-  
-  x = (t_aux / 5.0) - (31/5.0);
-  y = (b_aux/30.0)-3;
-  x= -1*x;
-  y = -1*y;
- // r = pow( (pow(x,2)+pow(y,2)),0.5);
- // theta = atan(y/x);
-  point.fromCartesian(x,y);
-  r = point.getR();
-  r = r/sqrt(2);
-  theta = point.getAngle();
-  theta = theta *180.0/PI;
-  
-  s = int(r*255);
-  h = long( (65535/360.0)*theta );
-   
-  Serial.print(" x: ");
-  Serial.print(x);
-  Serial.print(" y: ");
-  Serial.print(y);
-  Serial.print(" r: ");
-  Serial.print(r);
-  Serial.print(" th: ");
-  Serial.print(theta);
-  Serial.print(" s: ");
-  Serial.print(s);
-  Serial.print(" h: ");  
-  Serial.println(h);
-    
+ 	float t_aux = _temp;
+ 	float b_aux = _bpm;
+ 	if(t_aux < TEMP_MIN){t_aux = TEMP_MIN;}
+ 	if(t_aux > TEMP_MAX){t_aux = TEMP_MAX;}
+ 	if(b_aux < BPM_MIN ){b_aux = BPM_MIN;}
+ 	if(b_aux > BPM_MAX ){b_aux = BPM_MAX;}
 
+  	x = (t_aux / 5.0) - (31/5.0);
+  	y = (b_aux/20.0)-4;
+  	x = -1*x;
+  	y = -1*y;
+
+ 	// r = pow( (pow(x,2)+pow(y,2)),0.5);
+ 	// theta = atan(y/x);
+  	point.fromCartesian(x,y);
+  	r = point.getR();
+  	r = r/sqrt(2);
+  	theta = point.getAngle();
+  	theta = theta *180.0/PI;
+
+  	theta_aux = theta + 45;
+  	if(theta_aux < 180){z = theta_aux;}
+  	else{ z = abs(360 - theta_aux); }
+
+  	s = int(r*255);
+  	h = long( (65535/360.0)*theta );
+
+  	Serial.print(" x: ");
+  	Serial.print(x);
+  	Serial.print(" y: ");
+  	Serial.print(y);
+  	Serial.print(" r: ");
+  	Serial.print(r);
+  	Serial.print(" th: ");
+  	Serial.print(theta);
+  	Serial.print(" s: ");
+  	Serial.print(s);
+  	Serial.print(" h: ");
+  	Serial.print(h);
+  	Serial.print(" z: ");
+  	Serial.println(z);
 }
 
 
@@ -481,6 +489,20 @@ void imprimir()
   	}
   	timer = millis();
 }
+
+
+void printMenu()
+{
+	Serial.println("===================================Sentires=================================");
+	Serial.println(" ");
+  	Serial.println("Instrucciones");
+	Serial.println("- Intensidad: intresa la letra i seguido del valor del valor de intensidad. ej i100. luego presiona enter.");
+  	Serial.println("- Temperatura: intresa la letra t seguido del valor de temperatura. ej t25. luego presiona enter.");
+  	Serial.println("- BMP: intresa la letra b seguido del valor del valor de bmp. ej b100. luego presiona enter.");
+  	Serial.println(" ");
+  	Serial.println( "==========================================================================");
+}
+
 
 /*
 
