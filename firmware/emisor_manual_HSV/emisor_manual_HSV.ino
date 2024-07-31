@@ -77,10 +77,10 @@ typedef struct struct_message {
 
 struct_message myData;
 
-void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
+void OnDataSent(uint8_t *mac_addr,esp_now_send_status_t status) {
   // callback when data is sent
   //Serial.print("Last Packet Send Status: ");
-  if (sendStatus == 0) {
+  if (status == ESP_NOW_SEND_SUCCESS) {
     //Serial.println("Delivery success");
   } else {
     //Serial.println("Delivery fail");
@@ -116,11 +116,20 @@ void setup()
     	Serial.println("Error initializing ESP-NOW");
     	return;
   	}
-  	esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
+  	//esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
   	esp_now_register_send_cb(OnDataSent);
 
+
   	// Register peer
-  	esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
+  	esp_now_peer_info_t peerInfo;
+  	peerInfo.channel = 0;
+  	peerInfo.encrypt = false;
+
+  	memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  	if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    	Serial.println("Failed to add peer");
+    	return;
+  	}
 
 	printMenu();
 }
