@@ -22,10 +22,14 @@ AC: calibración, es necesario cada vez.
 Coordinates point = Coordinates();
 
 
+
 float x = 0.0;
 float y = 0.0;
 float r = 0.0;
 float theta = 0.0;
+float z = 0.0;
+float theta_aux = 0.0;
+
 
 const byte RATE_SIZE = 4;  //Increase this for more averaging. 4 is good.
 byte rates[RATE_SIZE];     //Array of heart rates
