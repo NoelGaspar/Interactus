@@ -9,8 +9,8 @@ AC: calibración, es necesario cada vez.
 //#include "MAX30105.h"         // Pulso bpm
 //#include <MPU6050_light.h>    //acelerometro
 //#include "heartRate.h"        // ritmo cardiaco
-#include <ESP8266WiFi.h>
-#include <espnow.h>
+#include <WiFi.h>
+#include <esp_now.h>
 #include <Coordinates.h>
 
 #define TEMP_MAX 36
@@ -60,9 +60,10 @@ int zona = 0;
 
 // PRINT
 unsigned long timer = millis();
+esp_now_peer_info_t peerInfo;
 
 // ESPNOW
-uint8_t broadcastAddress[] = { 0xA0, 0x76, 0x4E, 0x1C, 0x06, 0x70 }; // PRENDA{ 0x48, 0x27, 0xE2, 0x4D, 0xE6, 0xEC }  //LUCES CHIKAS { 0xA0, 0x76, 0x4E, 0x1C, 0x06, 0x70 }
+uint8_t broadcastAddress[] = { 0x60, 0x55, 0xF9, 0x7F, 0x9D, 0xB8 }; // PRENDA{ 0x48, 0x27, 0xE2, 0x4D, 0xE6, 0xEC }  //LUCES CHIKAS { 0xA0, 0x76, 0x4E, 0x1C, 0x06, 0x70 }
 //uint8_t broadcastAddress[] = { 0x48, 0x27, 0xE2, 0x4D, 0xE6, 0xEC };  //LUCES CHIKAS { 0xA0, 0x76, 0x4E, 0x1C, 0x06, 0x70 }
 
 // Structure example to send data
@@ -76,8 +77,7 @@ typedef struct struct_message {
 } struct_message;
 
 struct_message myData;
-
-void OnDataSent(uint8_t *mac_addr,esp_now_send_status_t status) {
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   // callback when data is sent
   //Serial.print("Last Packet Send Status: ");
   if (status == ESP_NOW_SEND_SUCCESS) {
@@ -105,7 +105,7 @@ void setup()
 
 	// Condiciones iniciales
 	myData.conectado = true;
-	myData.tipo = 1;
+	//myData.tipo = 1;
 	myData.a = 100;;
 
 	//WiFi
@@ -116,22 +116,29 @@ void setup()
     	Serial.println("Error initializing ESP-NOW");
     	return;
   	}
-  	esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
-  	esp_now_register_send_cb(OnDataSent);
+  	// Once ESPNow is successfully Init, we will register for Send CB to
+  // get the status of Trasnmitted packet
+  esp_now_register_send_cb(OnDataSent);
 
+  // Register peer
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;
+  peerInfo.encrypt = false;
 
-  	// Register peer
-  	esp_now_peer_info_t peerInfo;
-  	peerInfo.channel = 0;
-  	peerInfo.encrypt = false;
+  // Add peer
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
 
-  	memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  	if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    	Serial.println("Failed to add peer");
-    	return;
-  	}
+		Serial.println("===================================Sentires=================================");
+    Serial.println(" ");
+  	Serial.println("Instrucciones");
+	  Serial.println("- Intensidad: ingresa la letra i seguido del valor de intensidad. ej i100. luego presiona enter.");
+  	//Serial.println("- Temperatura: intresa la letra t seguido del valor de temperatura. ej t25. luego presiona enter.");
+  	//Serial.println("- BMP: intresa la letra b seguido del valor del valor de bmp. ej b100. luego presiona enter.");
+  	Serial.println(" ");
 
-	printMenu();
 }
 
 void loop()
@@ -183,12 +190,18 @@ void loop()
 		else if(tipo == 'i')
 		{
 			intensidad = Serial.parseInt();
-			Serial.print("configurando intensisdad. Nueva intensidad: ");
+			Serial.print("Valor actual de intensidad: ");
 			Serial.println(intensidad);
 	      	accActual = intensidad;
 			myData.a = accActual;
 			//sendESPNow();
-		}
+      Serial.println(" ");
+  	  Serial.println("Instrucciones");
+	    //Serial.println("- Intensidad: ingresa la letra i seguido del valor de intensidad. ej i100. luego presiona enter.");
+  	  Serial.println("- Temperatura: ingresa la letra t seguido del valor de temperatura. ej t25. luego presiona enter.");
+  	  //Serial.println("- BMP: intresa la letra b seguido del valor del valor de bmp. ej b100. luego presiona enter.");
+  	  Serial.println(" ");
+  	}
 		else if(tipo == 'z')
 		{
 			zona = Serial.parseInt();
@@ -200,26 +213,44 @@ void loop()
     	else if(tipo == 't')
     	{
       		t = Serial.parseInt();
-      		Serial.print("configurando temperatura : ");
+      		Serial.print("Valor actual temperatura : ");
       		Serial.println(t);
-      	//sendESPNow();
-    	}
+      	  Serial.println(" ");
+  	      Serial.println("Instrucciones");
+	        //Serial.println("- Intensidad: ingresa la letra i seguido del valor de intensidad. ej i100. luego presiona enter.");
+  	      //Serial.println("- Temperatura: intresa la letra t seguido del valor de temperatura. ej t25. luego presiona enter.");
+  	      Serial.println("- BPM: ingresa la letra b seguido del valor de bpm. ej b100. luego presiona enter.");
+  	      Serial.println(" ");
+  	  }
     	else if(tipo == 'b')
     	{
       		b = Serial.parseInt();
-      		Serial.print("configurando bpm: ");
+      		Serial.print("Valor actual bpm: ");
       		Serial.println(b);
-      		conversor(t,b);
-			myData.tipo = 1;
+      		Serial.println( "==========================================================================");
+      	  Serial.println(" ");
+
+          conversor(t,b);
+			    myData.tipo = z;
       		myData.h = h;
       		myData.s = s;
       		myData.v = v;
-      		//sendESPNow();
+
+          Serial.println("¡¡VALORES ACTUALIZADOS!! Puedes ver el resultado en la prenda.");
+          Serial.println(" ");
+
+          Serial.println("===================================Sentires=================================");
+          Serial.println(" ");
+  	      Serial.println("Si quieres probar nuevos valores:");
+	        Serial.println("- Intensidad: ingresa la letra i seguido del valor de intensidad. ej i100. luego presiona enter.");
+  	      //Serial.println("- Temperatura: intresa la letra t seguido del valor de temperatura. ej t25. luego presiona enter.");
+  	      //Serial.println("- BMP: intresa la letra b seguido del valor del valor de bmp. ej b100. luego presiona enter.");
+
     	}
     	else if(tipo == '\n')
     	{
 			sendESPNow();
-			printMenu();
+			//printMenu();
     	}
 	}
 
@@ -258,7 +289,7 @@ void conversor(float _temp, float _bpm)
 
   	s = int(r*255);
   	h = long( (65535/360.0)*theta );
-
+/*
   	Serial.print(" x: ");
   	Serial.print(x);
   	Serial.print(" y: ");
@@ -273,222 +304,12 @@ void conversor(float _temp, float _bpm)
   	Serial.print(h);
   	Serial.print(" z: ");
   	Serial.println(z);
-}
-
-
-/*
-void mapa(int c)
-{
-  if (c == 1)
-  {
-      temp = 23;
-      bmp = 150;
-  }
-  if (c == 2 )
-  {
-      temp = 27;
-      bmp  = 150;
-  }
-  if (c == 3)
-  {
-      temp = 29;
-      bmp = 150;
-  }
-  if (c == 4)
-  {
-      temp = 32;
-      bmp = 150;
-  }
-  if (c == 5)
-  {
-      temp = 35;
-      bmp = 150;
-  }
-  if (c == 6)
-  {
-      temp = 20;
-      bmp = 130;
-  }
-  if (c == 7)
-  {
-      temp = 23;
-      bmp  = 130;
-  }
-  if (c == 8)
-  {
-      temp = 27;
-      bmp = 130;
-  }
-  if (c == 9)
-  {
-      temp = 29;
-      bmp = 130;
-  }
-  if (c == 10)
-  {
-      temp = 33;
-      bmp = 130;
-  }
-  if (c == 11)
-  {
-      temp = 36;
-      bmp = 130;
-  }
-  if (c == 12)
-  {
-      temp = 39;
-      bmp = 130;
-  }
-  if (c == 13)
-  {
-      temp = 6;
-      bmp = 115;
-  }
-  if (c == 14)
-  {
-      temp = 23;
-      bmp = 115;
-  }
-  if (c == 15)
-  {
-      temp = 26;
-      bmp = 115;
-  }
-  if (c == 16)
-  {
-      temp = 29;
-      bmp = 115;
-  }
-  if (c == 17)
-  {
-      temp = 32;
-      bmp = 115;
-  }
-  if (c == 18)
-  {
-      temp = 36;
-      bmp = 115;
-  }
-  if (c == 19)
-  {
-      temp = 38;
-      bmp = 115;
-  }
-  if (c == 20)
-  {
-      temp = 20;
-      bmp = 105;
-  }
-  if (c == 21)
-  {
-      temp = 23;
-      bmp = 105;
-  }
-  if (c == 22)
-  {
-      temp = 26;
-      bmp = 105;
-  }
-  if (c == 23)
-  {
-      temp = 29;
-      bmp = 105;
-  }
-  if (c == 24)
-  {
-      temp = 32;
-      bmp = 105;
-  }
-  if (c == 25)
-  {
-      temp = 36;
-      bmp = 105;
-  }
-  if (c == 26)
-  {
-      temp = 38;
-      bmp = 105;
-  }
-  if (c == 27)
-  {
-      temp = 18;
-      bmp = 90;
-  }
-  if (c == 28)
-  {
-      temp = 23;
-      bmp = 90;
-  }
-  if (c == 29)
-  {
-      temp = 26;
-      bmp = 90;
-  }
-  if (c == 30)
-  {
-      temp = 29;
-      bmp = 90;
-  }
-  if (c == 31)
-  {
-      temp = 32;
-      bmp = 90;
-  }
-  if (c == 32)
-  {
-      temp = 36;
-      bmp = 90;
-  }
-  if (c == 33)
-  {
-      temp = 38;
-      bmp = 90;
-  }
-  if (c == 34)
-  {
-      temp = 22;
-      bmp = 70;
-  }
-  if (c == 35)
-  {
-      temp = 26;
-      bmp = 70;
-  }
-  if (c == 36)
-  {
-      temp = 30;
-      bmp = 70;
-  }
-  if (c == 37)
-  {
-      temp = 32;
-      bmp = 70;
-  }
-  if (c == 38)
-  {
-      temp = 36;
-      bmp = 70;
-  }
-}
-
-
-
-
-void updateMsg()
-{
- 	cuadricula(tempActual, beatAvg);
-  	myData.r = r;
-  	myData.g = g;
-  	myData.b = b;
-  	myData.a = accActual;
-	myData.tipo = tipo;
-  	myData.conectado = true;
-}
 */
+}
 
 void sendESPNow()
 {
-  Serial.println("Enviando mensaje");
+  //Serial.println("Enviando mensaje");
 	esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
 }
 
